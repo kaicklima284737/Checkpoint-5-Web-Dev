@@ -4,7 +4,7 @@
 
 ## Frete grátis
 
-A campanha de frete grátis vale para compras com valor final acima de R$ 200. O cliente vê o selo "Frete grátis" quando o valor final alcança o limite e, no carrinho, também vê quanto falta para atingir a meta.
+Produtos com preço acima de R$ 100 têm frete grátis e exibem o selo "Frete grátis".
 
 ## Cupons
 
