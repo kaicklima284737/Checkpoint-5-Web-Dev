@@ -395,7 +395,7 @@ h2 {
   font-size: 0.85rem;
 }
 
-.preco-original + .preco {
+.preco-original+.preco {
   color: var(--cor-destaque);
 }
 
@@ -622,7 +622,7 @@ h2 {
   padding: var(--espaco-4);
 }
 
-.item-carrinho + .item-carrinho {
+.item-carrinho+.item-carrinho {
   border-top: 1px solid var(--cor-borda);
 }
 
@@ -729,6 +729,11 @@ h2 {
 .resumo-linha {
   color: var(--cor-frete);
   font-weight: 600;
+}
+
+.resumo-frete {
+  color: var(--cor-texto);
+  font-size: 0.9rem;
 }
 
 .total {

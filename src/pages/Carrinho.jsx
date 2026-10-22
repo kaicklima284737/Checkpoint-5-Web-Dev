@@ -1,11 +1,19 @@
 import { useState } from 'react'
 import { Link } from 'react-router'
-import SugestaoItem from '../components/SugestaoItem'
+import ProdutoCard from '../components/ProdutoCard'
 import { agruparItens, calcularTotal } from '../utils/carrinho'
 import { validarCupom } from '../utils/cupons'
 import { formatarPreco } from '../utils/formatarPreco'
 
-export default function Carrinho({ carrinho, produtos, clienteAtual, onAdicionar, onRemover }) {
+export default function Carrinho({
+  carrinho,
+  produtos,
+  clienteAtual,
+  cupomJaUsado,
+  onAdicionar,
+  onRemover,
+  onRegistrarUsoCupom,
+}) {
   const [codigoCupom, setCodigoCupom] = useState('')
   const [cupomAplicado, setCupomAplicado] = useState(null)
   const [mensagemCupom, setMensagemCupom] = useState('')
@@ -13,6 +21,8 @@ export default function Carrinho({ carrinho, produtos, clienteAtual, onAdicionar
   const itens = agruparItens(carrinho)
   const total = calcularTotal(carrinho)
   const totalComDesconto = cupomAplicado ? total * (1 - cupomAplicado.desconto) : total
+  const valorRestanteFrete = Math.max(0, 200 - totalComDesconto)
+  const freteGratisAplicado = totalComDesconto >= 200
 
   const sugestoes = produtos
     .filter((produto) => !carrinho.find((item) => item.id === produto.id))
@@ -20,14 +30,15 @@ export default function Carrinho({ carrinho, produtos, clienteAtual, onAdicionar
 
   function aplicarCupom(evento) {
     evento.preventDefault()
-    const resultado = validarCupom(codigoCupom, clienteAtual)
+    const resultado = validarCupom(codigoCupom, clienteAtual, cupomJaUsado)
 
     if (resultado.valido) {
       setCupomAplicado(resultado)
-      setMensagemCupom('Cupom aplicado!')
+      setMensagemCupom(resultado.mensagem)
+      onRegistrarUsoCupom(clienteAtual.id)
     } else {
       setCupomAplicado(null)
-      setMensagemCupom('Cupom inválido')
+      setMensagemCupom(resultado.mensagem)
     }
   }
 
@@ -93,6 +104,14 @@ export default function Carrinho({ carrinho, produtos, clienteAtual, onAdicionar
               <span>{cupomAplicado.desconto * 100}%</span>
             </p>
           )}
+
+          <p className="resumo-linha resumo-frete">
+            <span>Frete</span>
+            <span>
+              {freteGratisAplicado ? 'Grátis' : `Faltam ${formatarPreco(valorRestanteFrete)}`}
+            </span>
+          </p>
+
           <p className="total">
             <span>Total</span>
             <span>{formatarPreco(totalComDesconto)}</span>
@@ -103,7 +122,7 @@ export default function Carrinho({ carrinho, produtos, clienteAtual, onAdicionar
       <h2>Você também pode gostar</h2>
       <div className="sugestoes">
         {sugestoes.map((produto) => (
-          <SugestaoItem key={produto.id} produto={produto} onAdicionar={onAdicionar} />
+          <ProdutoCard key={produto.id} produto={produto} onAdicionar={onAdicionar} />
         ))}
       </div>
     </section>

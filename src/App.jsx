@@ -9,6 +9,17 @@ import Carrinho from './pages/Carrinho'
 import Estoque from './pages/Estoque'
 import { buscarProdutos } from './services/produtos'
 import { buscarClientes } from './services/clientes'
+import { obterPrecoNumerico } from './utils/carrinho'
+
+function normalizarProduto(produto) {
+  const preco = obterPrecoNumerico(produto.price)
+
+  return {
+    ...produto,
+    price: preco,
+    precoOriginal: produto.precoOriginal ? obterPrecoNumerico(produto.precoOriginal) : undefined,
+  }
+}
 
 export default function App() {
   const [produtos, setProdutos] = useState([])
@@ -17,10 +28,18 @@ export default function App() {
   const [carrinho, setCarrinho] = useState([])
   const [clientes, setClientes] = useState([])
   const [clienteAtualId, setClienteAtualId] = useState(null)
+  const [listaEspera, setListaEspera] = useState([])
+  const [cupomsUsados, setCupomsUsados] = useState([])
 
   useEffect(() => {
     buscarProdutos()
-      .then((dados) => setProdutos(dados))
+      .then((dados) => {
+        const produtosNormalizados = dados
+          .map(normalizarProduto)
+          .filter((produto) => produto.price !== null && produto.price !== undefined)
+
+        setProdutos(produtosNormalizados)
+      })
       .catch(() => setErro('Não foi possível carregar os produtos.'))
       .finally(() => setCarregando(false))
 
@@ -31,24 +50,58 @@ export default function App() {
   }, [])
 
   function adicionarAoCarrinho(produto) {
-    setCarrinho(carrinho.concat(produto))
+    if (!produto || obterPrecoNumerico(produto.price) === null || produto.estoque === 0) {
+      return
+    }
+
+    setCarrinho((carrinhoAtual) => carrinhoAtual.concat(produto))
   }
 
   function removerUmaUnidade(produtoId) {
-    // Remove só a primeira unidade encontrada do produto
-    let removido = false
-    setCarrinho(
-      carrinho.filter((produto) => {
-        if (!removido && produto.id === produtoId) {
-          removido = true
-          return false
-        }
-        return true
-      })
-    )
+    setCarrinho((carrinhoAtual) => {
+      const indice = carrinhoAtual.findIndex((produto) => produto.id === produtoId)
+      if (indice === -1) {
+        return carrinhoAtual
+      }
+
+      return carrinhoAtual.filter((produto, index) => index !== indice)
+    })
+  }
+
+  function registrarAviso({ produtoId, produtoNome, nome, email }) {
+    setListaEspera((atual) => {
+      const jaRegistrado = atual.some(
+        (item) => item.produtoId === produtoId && item.email.toLowerCase() === email.toLowerCase()
+      )
+
+      if (jaRegistrado) {
+        return atual
+      }
+
+      return [
+        ...atual,
+        {
+          id: Date.now().toString(),
+          produtoId,
+          produtoNome,
+          nome,
+          email,
+        },
+      ]
+    })
+  }
+
+  function registrarUsoCupom(clienteId) {
+    setCupomsUsados((atual) => {
+      if (atual.includes(clienteId)) {
+        return atual
+      }
+      return [...atual, clienteId]
+    })
   }
 
   const clienteAtual = clientes.find((cliente) => cliente.id === clienteAtualId)
+  const cupomJaUsado = clienteAtual ? cupomsUsados.includes(clienteAtual.id) : false
 
   return (
     <div className="app">
@@ -67,7 +120,13 @@ export default function App() {
             />
             <Route
               path="/produto/:id"
-              element={<PaginaProduto produtos={produtos} onAdicionar={adicionarAoCarrinho} />}
+              element={
+                <PaginaProduto
+                  produtos={produtos}
+                  onAdicionar={adicionarAoCarrinho}
+                  onRegistrarAviso={registrarAviso}
+                />
+              }
             />
             <Route
               path="/carrinho"
@@ -76,12 +135,14 @@ export default function App() {
                   carrinho={carrinho}
                   produtos={produtos}
                   clienteAtual={clienteAtual}
+                  cupomJaUsado={cupomJaUsado}
                   onAdicionar={adicionarAoCarrinho}
                   onRemover={removerUmaUnidade}
+                  onRegistrarUsoCupom={registrarUsoCupom}
                 />
               }
             />
-            <Route path="/estoque" element={<Estoque produtos={produtos} />} />
+            <Route path="/estoque" element={<Estoque produtos={produtos} listaEspera={listaEspera} />} />
           </Routes>
         )}
       </main>
