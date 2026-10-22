@@ -23,6 +23,7 @@ export default function PaginaProduto({ produtos, onAdicionar, onRegistrarAviso 
   const relacionados = produtos
     .filter((item) => item.estoque > 0 && item.category === produto.category && item.id !== produto.id)
     .slice(0, 4)
+  const valorRestanteFrete = Math.max(0, 200 - Number(produto.price || 0))
 
   function enviarAviso(evento) {
     evento.preventDefault()
@@ -63,6 +64,11 @@ export default function PaginaProduto({ produtos, onAdicionar, onRegistrarAviso 
             ★ {produto.rating.rate} <span>({produto.rating.count} avaliações)</span>
           </p>
           <p className="detalhe-preco">R$ {Number(produto.price).toFixed(2).replace('.', ',')}</p>
+          <p className={Number(produto.price) >= 200 ? 'frete-gratis' : 'frete-restante'}>
+            {Number(produto.price) >= 200
+              ? 'Frete grátis'
+              : `Faltam R$ ${valorRestanteFrete.toFixed(2).replace('.', ',')} para frete grátis`}
+          </p>
           <p className="detalhe-descricao">{produto.description}</p>
           <p className="detalhe-estoque">{produto.estoque} unidades disponíveis</p>
 

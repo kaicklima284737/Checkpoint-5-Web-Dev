@@ -6,6 +6,38 @@ export function obterPrecoNumerico(valor) {
   return !isNaN(numero) && valor !== undefined && valor !== null ? numero : null
 }
 
+export function adicionarProdutoAoCarrinho(carrinho, produto) {
+  if (!produto) {
+    return carrinho
+  }
+
+  return carrinho.concat(produto)
+}
+
+export function removerProdutoDoCarrinho(carrinho, produtoId) {
+  const indice = carrinho.findIndex((produto) => produto.id === produtoId)
+
+  if (indice === -1) {
+    return carrinho
+  }
+
+  return carrinho.filter((produto, index) => index !== indice)
+}
+
+export function atualizarEstoqueProduto(produtos, produtoId, delta) {
+  return produtos.map((produto) => {
+    if (produto.id !== produtoId) {
+      return produto
+    }
+
+    const estoqueAtual = Number(produto.estoque ?? 0)
+    return {
+      ...produto,
+      estoque: Math.max(0, estoqueAtual + delta),
+    }
+  })
+}
+
 export function calcularTotal(carrinho) {
   return carrinho.reduce((total, produto) => {
     const preco = obterPrecoNumerico(produto?.price)

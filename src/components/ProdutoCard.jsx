@@ -4,7 +4,9 @@ import { formatarPreco } from '../utils/formatarPreco'
 export default function ProdutoCard({ produto, onAdicionar }) {
   const esgotado = produto.estoque === 0
   const precoValido = !isNaN(Number(produto.price)) && produto.price !== undefined && produto.price !== null
-  const freteGratisNoProduto = Number(produto.price) >= 200
+  const precoNumerico = Number(produto.price)
+  const freteGratisNoProduto = precoNumerico >= 200
+  const valorRestanteFrete = Math.max(0, 200 - precoNumerico)
 
   return (
     <article className="card">
@@ -25,6 +27,10 @@ export default function ProdutoCard({ produto, onAdicionar }) {
         )}
         <span className="preco">{formatarPreco(produto.price)}</span>
       </div>
+
+      <p className={freteGratisNoProduto ? 'frete-gratis' : 'frete-restante'}>
+        {freteGratisNoProduto ? 'Frete grátis' : `Faltam ${formatarPreco(valorRestanteFrete)} para frete grátis`}
+      </p>
 
       <div className="card-selos">
         {freteGratisNoProduto && <span className="selo selo-frete">Frete grátis</span>}

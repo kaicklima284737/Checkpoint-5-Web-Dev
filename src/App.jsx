@@ -9,7 +9,12 @@ import Carrinho from './pages/Carrinho'
 import Estoque from './pages/Estoque'
 import { buscarProdutos } from './services/produtos'
 import { buscarClientes } from './services/clientes'
-import { obterPrecoNumerico } from './utils/carrinho'
+import {
+  adicionarProdutoAoCarrinho,
+  atualizarEstoqueProduto,
+  obterPrecoNumerico,
+  removerProdutoDoCarrinho,
+} from './utils/carrinho'
 
 function normalizarProduto(produto) {
   const preco = obterPrecoNumerico(produto.price)
@@ -54,18 +59,13 @@ export default function App() {
       return
     }
 
-    setCarrinho((carrinhoAtual) => carrinhoAtual.concat(produto))
+    setCarrinho((carrinhoAtual) => adicionarProdutoAoCarrinho(carrinhoAtual, produto))
+    setProdutos((produtosAtuais) => atualizarEstoqueProduto(produtosAtuais, produto.id, -1))
   }
 
   function removerUmaUnidade(produtoId) {
-    setCarrinho((carrinhoAtual) => {
-      const indice = carrinhoAtual.findIndex((produto) => produto.id === produtoId)
-      if (indice === -1) {
-        return carrinhoAtual
-      }
-
-      return carrinhoAtual.filter((produto, index) => index !== indice)
-    })
+    setCarrinho((carrinhoAtual) => removerProdutoDoCarrinho(carrinhoAtual, produtoId))
+    setProdutos((produtosAtuais) => atualizarEstoqueProduto(produtosAtuais, produtoId, 1))
   }
 
   function registrarAviso({ produtoId, produtoNome, nome, email }) {

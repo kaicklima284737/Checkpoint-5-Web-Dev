@@ -378,6 +378,18 @@ h2 {
   align-items: baseline;
 }
 
+.frete-restante,
+.frete-gratis {
+  margin: 0.35rem 0 0;
+  font-size: 0.8rem;
+  color: var(--cor-frete);
+  font-weight: 700;
+}
+
+.frete-restante {
+  color: var(--cor-alerta);
+}
+
 .preco {
   font-weight: 800;
   font-size: 1.1rem;

@@ -25,7 +25,7 @@ export default function Carrinho({
   const freteGratisAplicado = totalComDesconto >= 200
 
   const sugestoes = produtos
-    .filter((produto) => !carrinho.find((item) => item.id === produto.id))
+    .filter((produto) => produto.estoque > 0 && !carrinho.find((item) => item.id === produto.id))
     .slice(0, 3)
 
   function aplicarCupom(evento) {
